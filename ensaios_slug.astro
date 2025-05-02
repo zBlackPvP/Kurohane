@@ -1,0 +1,8 @@
+---
+import { fetchPost } from '../../utils/fetchPost';
+
+const { slug } = Astro.params;
+const post = fetchPost(slug);
+---
+
+<PostLayout title={post.title} content={post.content} />
