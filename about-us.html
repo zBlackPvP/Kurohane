@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Nós - Idealizadores | Projeto F.R.I.E.N.D.S</title>
+    <!-- Preconnect for Google Fonts and Model Viewer for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Model Viewer Component -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js" async></script>
+
+    <style>
+        /* --- Global Reset & Base Styles --- */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Color Palette */
+            --color-background: #0a0a0a; /* Slightly off-black for depth */
+            --color-surface: #1a1a1a;  /* Card backgrounds */
+            --color-primary: #61dafb;   /* Accent color 1 (light blue) */
+            --color-secondary: #4e54c8; /* Accent color 2 (purple) */
+            --color-text: #e0e0e0;      /* Main text color (light gray) */
+            --color-heading: #ffffff;   /* Heading color (white) */
+            --color-border: rgba(255, 255, 255, 0.1); /* Subtle borders */
+
+            /* Typography */
+            --font-primary: 'Poppins', sans-serif;
+            --font-size-base: 1rem; /* 16px default */
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-h1: clamp(2rem, 5vw + 1rem, 3.5rem); /* Responsive H1 */
+            --font-size-h2: clamp(1.5rem, 4vw + 0.5rem, 2.5rem); /* Responsive H2 */
+            --font-size-h3: clamp(1.25rem, 3vw + 0.5rem, 1.75rem); /* Responsive H3 */
+
+            /* Spacing */
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+
+            /* Transitions & Animations */
+            --transition-speed: 0.3s;
+            --transition-ease: ease-in-out;
+
+            /* Borders */
+            --border-radius: 8px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: var(--font-size-base); /* Base font size for rem units */
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.7;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Ensure footer stays at bottom */
+        }
+
+        /* --- Utility Classes --- */
+        .container {
+            width: 90%;
+            max-width: 1200px; /* Max content width */
+            margin-left: auto;
+            margin-right: auto;
+            padding: var(--spacing-lg) 0;
+        }
+
+        /* --- Header --- */
+        .site-header {
+            background-color: rgba(10, 10, 10, 0.8); /* Semi-transparent header */
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+            padding: var(--spacing-sm) 0;
+            text-align: center;
+            position: sticky; /* Sticky header */
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .site-header h1 {
+            color: var(--color-heading);
+            font-size: var(--font-size-h2);
+            font-weight: 700;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex-grow: 1; /* Allow main content to fill available space */
+        }
+
+        .intro-section {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .intro-section h2 {
+            color: var(--color-heading);
+            font-size: var(--font-size-h2);
+            margin-bottom: var(--spacing-xs);
+            font-weight: 600;
+        }
+
+        .intro-section p {
+            font-size: var(--font-size-lg);
+            max-width: 70ch; /* Optimal reading line length */
+            margin: 0 auto;
+            color: darken(var(--color-text), 10%);
+        }
+
+        /* --- Idealizers Grid --- */
+        .idealizers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); /* Responsive grid */
+            gap: var(--spacing-lg);
+            align-items: stretch; /* Make cards same height */
+        }
+
+        .idealizer-card {
+            background-color: var(--color-surface);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            border: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform var(--transition-speed) var(--transition-ease),
+                        box-shadow var(--transition-speed) var(--transition-ease);
+            overflow: hidden; /* Contain pseudo-elements */
+            position: relative; /* For pseudo-element positioning */
+        }
+
+        .idealizer-card:hover {
+            transform: translateY(-5px) scale(1.02); /* Subtle lift effect */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Animated border effect on hover */
+        .idealizer-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: var(--border-radius);
+            border: 2px solid transparent;
+            pointer-events: none;
+            transition: border-color var(--transition-speed) var(--transition-ease);
+            z-index: 1;
+        }
+        .idealizer-card.kram3rr:hover::before { border-color: var(--color-primary); }
+        .idealizer-card.dartharrow:hover::before { border-color: var(--color-secondary); }
+
+        .idealizer-card h3 {
+            font-size: var(--font-size-h3);
+            color: var(--color-heading);
+            margin-bottom: var(--spacing-xs);
+            font-weight: 700;
+        }
+
+        .idealizer-card .role {
+            font-size: var(--font-size-base);
+            color: var(--color-primary); /* Use accent for role */
+            margin-bottom: var(--spacing-md);
+            font-weight: 600;
+            display: block; /* Ensure it takes its own line */
+        }
+
+        /* --- Model Viewer --- */
+        model-viewer {
+            width: 100%;
+            height: auto; /* Maintain aspect ratio */
+            aspect-ratio: 1 / 1; /* Square aspect ratio */
+            max-width: 350px; /* Limit max size */
+            margin: var(--spacing-md) 0;
+            border-radius: var(--border-radius);
+            background-color: transparent; /* Blend with card */
+            --mv-interaction-prompt-bg: rgba(255, 255, 255, 0.8);
+            --mv-interaction-prompt-color: #000;
+        }
+
+        /* --- Autobiography Section --- */
+        .autobiography {
+            border: 1px solid var(--color-border);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            background-color: rgba(0, 0, 0, 0.2); /* Slightly darker background */
+            text-align: justify;
+            font-size: var(--font-size-base);
+            hyphens: auto; /* Improve text justification */
+            width: 100%; /* Take full width within the card */
+        }
+
+        .autobiography h4 { /* Changed from h3 to h4 for better hierarchy */
+            font-size: var(--font-size-lg);
+            color: var(--color-heading);
+            margin-bottom: var(--spacing-sm);
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .autobiography p {
+            margin: 0;
+            color: var(--color-text);
+            overflow-wrap: break-word; /* Ensure long words break */
+        }
+
+        /* --- Footer --- */
+        .site-footer {
+            background-color: var(--color-surface);
+            color: var(--color-text);
+            text-align: center;
+            padding: var(--spacing-md) 0;
+            margin-top: var(--spacing-xl); /* Space above footer */
+            border-top: 1px solid var(--color-border);
+            font-size: 0.9rem;
+        }
+
+        .site-footer p {
+            margin: 0;
+            opacity: 0.8; /* Slightly muted text */
+        }
+        .site-footer strong {
+            color: var(--color-heading);
+            font-weight: 600;
+        }
+
+        /* --- Floating Action Button (FAB) - Home Button --- */
+        .fab-home {
+            position: fixed;
+            bottom: var(--spacing-md);
+            right: var(--spacing-md);
+            background-color: var(--color-primary);
+            color: var(--color-background);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem; /* Icon size */
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: background-color var(--transition-speed) var(--transition-ease),
+                        transform var(--transition-speed) var(--transition-ease);
+            z-index: 1000;
+        }
+
+        .fab-home:hover,
+        .fab-home:focus {
+            background-color: darken(var(--color-primary), 10%);
+            transform: scale(1.1);
+            outline: none; /* Remove default focus outline */
+        }
+        /* Simple Home Icon using borders */
+         .fab-home::before {
+            content: '';
+            display: block;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid var(--color-background);
+            position: relative;
+            top: -2px;
+         }
+         .fab-home::after {
+            content: '';
+            display: block;
+            width: 16px;
+            height: 10px;
+            background: var(--color-background);
+            position: relative;
+            top: 0px;
+         }
+
+
+        /* --- Accessibility --- */
+        /* Basic focus outline for keyboard navigation */
+        a:focus, button:focus, [tabindex]:focus {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+        /* Hide visual elements from screen readers if needed */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <h1>Sobre Nós — Idealizadores</h1>
+    </header>
+
+    <main class="main-content container">
+        <section class="intro-section" aria-labelledby="intro-heading">
+            <h2 id="intro-heading">Conheça a Equipe por Trás do Projeto</h2>
+            <p>Dedicados estudantes e entusiastas, combinando paixão e conhecimento para criar algo especial.</p>
+        </section>
+
+        <section class="idealizers-grid" aria-label="Idealizadores do Projeto">
+
+            <!-- Idealizer 1: kram3rr -->
+            <article class="idealizer-card kram3rr">
+                <h3>kram3rr</h3>
+                <span class="role">Engenharia Elétrica & Filosofia</span>
+                <p>Estudante de Engenharia Elétrica na UFRN, 20 anos. Um pensador crítico explorando a interseção da tecnologia com a filosofia moderna.</p>
+
+                <model-viewer
+                    id="model-kram3rr"
+                    src="https://raw.githubusercontent.com/oneCplusplus/oneCplusplus.github.io/main/model%20(2).gltf"
+                    ios-src=""
+                    alt="Modelo 3D interativo de kram3rr"
+                    camera-controls
+                    auto-rotate
+                    auto-rotate-delay="2000"
+                    rotation-per-second="20deg"
+                    interaction-prompt="auto"
+                    loading="lazy"
+                    reveal="auto"
+                    aria-label="Modelo 3D de kram3rr">
+                    <div class="progress-bar hide" slot="progress-bar">
+                        <div class="update-bar"></div>
+                    </div>
+                </model-viewer>
+
+                <div class="autobiography">
+                    <h4>Autobiografia</h4>
+                    <p>
+                        Cauã Vitor Figueredo Silva (kram3rr) é um indivíduo multifacetado. Como estudante de Engenharia Elétrica, ele navega por circuitos complexos com precisão técnica. Simultaneamente, como um autointitulado filósofo moderno, ele se aprofunda em questões existenciais e críticas contemporâneas. Cauã personifica a fusão da lógica da engenharia com a profundidade da investigação filosófica, buscando iluminar tanto o mundo material quanto o abstrato, desafiando os limites convencionais do conhecimento.
+                    </p>
+                </div>
+            </article>
+
+            <!-- Idealizer 2: DarthArrow -->
+            <article class="idealizer-card dartharrow">
+                <h3>DarthArrow</h3>
+                <span class="role">Direito & Justiça Social</span>
+                <p>Estudante de Direito na UFRN, 21 anos. Detentor de notório saber jurídico e aspirante a Ministro do STF, focado em equidade e transformação social.</p>
+
+                <model-viewer
+                    id="model-darthArrow"
+                    src="https://raw.githubusercontent.com/oneCplusplus/oneCplusplus.github.io/main/model.gltf"
+                    ios-src=""
+                    alt="Modelo 3D interativo de DarthArrow"
+                    camera-controls
+                    auto-rotate
+                    auto-rotate-delay="2500"
+                    rotation-per-second="20deg"
+                    interaction-prompt="auto"
+                    loading="lazy"
+                    reveal="auto"
+                    aria-label="Modelo 3D de DarthArrow">
+                     <div class="progress-bar hide" slot="progress-bar">
+                        <div class="update-bar"></div>
+                    </div>
+                </model-viewer>
+
+                <div class="autobiography">
+                    <h4>Biografia</h4>
+                    <p>
+                        Igor Fonseca de Carvalho (DarthArrow) demonstra, desde cedo, uma aptidão excepcional para o Direito e um compromisso profundo com a justiça social. Como estudante exemplar na UFRN, acumulou vasto conhecimento jurídico, destacando-se em debates sobre direitos humanos. Sua visão vai além da teoria, aspirando a uma posição no Supremo Tribunal Federal para moldar um sistema judiciário mais justo e equitativo para todos os brasileiros, tornando-se um potencial agente transformador no cenário nacional.
+                    </p>
+                </div>
+            </article>
+
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>© <span id="current-year"></span> <strong>F.R.I.E.N.D.S Project</strong> website by <strong>oneBlackI</strong>. All rights reserved.</p>
+        <p>Mods compilation by <strong>DarthArrow</strong>.</p>
+    </footer>
+
+    <!-- Home Button -->
+    <a href="#" id="homeButton" class="fab-home" aria-label="Ir para a Página Inicial">
+        <!-- Icon generated via CSS -->
+    </a>
+
+    <script>
+        // --- Dynamic Year in Footer ---
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // --- Home Button Logic ---
+        const homeButton = document.getElementById('homeButton');
+        if (homeButton) {
+            // Determine base URL based on hosting environment
+            const isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const homeUrl = isLocal ? './index.html' : 'https://onecplusplus.github.io/'; // Adjust GitHub Pages URL if different
+
+            homeButton.href = homeUrl;
+
+            // Optional: Add smooth scroll to top if already on the target page (for SPA-like feel)
+            // homeButton.addEventListener('click', (event) => {
+            //     if (window.location.pathname === '/' || window.location.pathname.endsWith('/index.html')) {
+            //         event.preventDefault();
+            //         window.scrollTo({ top: 0, behavior: 'smooth' });
+            //     }
+            // });
+        }
+
+        // --- Model Viewer Enhancements (Optional) ---
+        // Example: Add loading indicator logic if needed (ModelViewer default is often sufficient)
+        // document.querySelectorAll('model-viewer').forEach(viewer => {
+        //     viewer.addEventListener('progress', (event) => {
+        //         const progressBar = viewer.querySelector('.progress-bar');
+        //         const updateBar = viewer.querySelector('.update-bar');
+        //         if (progressBar && updateBar) {
+        //             updateBar.style.width = `${event.detail.totalProgress * 100}%`;
+        //             progressBar.classList.toggle('hide', event.detail.totalProgress === 1);
+        //         }
+        //     });
+        // });
+
+        // --- Intersection Observer for Animations (Example) ---
+        // Add fade-in animation to cards when they enter the viewport
+        const cards = document.querySelectorAll('.idealizer-card');
+        const cardObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.6s ease-out forwards';
+                    observer.unobserve(entry.target); // Animate only once
+                }
+            });
+        }, { threshold: 0.1 }); // Trigger when 10% visible
+
+        cards.forEach(card => {
+            card.style.opacity = '0'; // Initially hide cards
+            cardObserver.observe(card);
+        });
+
+        // Define the fadeInUp animation if not done in CSS
+        const styleSheet = document.styleSheets[0];
+        styleSheet.insertRule(`
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `, styleSheet.cssRules.length);
+
+    </script>
+</body>
+</html>
