@@ -1,0 +1,228 @@
+// Unidade de Controle
+// Implementa a máquina de estados e gera os sinais de controle
+module control_unit(
+    input wire clk,
+    input wire reset,
+    input wire [4:0] opcode,       // Opcode da instrução
+    input wire zero_flag,          // Flag zero da ALU
+    output reg pc_write,           // Controle do PC
+    output reg pc_source,          // Seletor de fonte do PC
+    output reg mem_read,           // Controle de leitura da memória
+    output reg mem_write,          // Controle de escrita da memória
+    output reg reg_write,          // Controle de escrita no banco de registradores
+    output reg alu_src_a,          // Seletor da fonte A da ALU
+    output reg alu_src_b,          // Seletor da fonte B da ALU
+    output reg [1:0] reg_dst,      // Seletor do registrador de destino
+    output reg [1:0] mem_to_reg,   // Seletor dos dados para escrita no registrador
+    output reg [4:0] alu_control,  // Controle da ALU
+    output reg branch,             // Sinal de branch
+    output reg jump                // Sinal de jump
+);
+
+    // Estados da máquina de estados
+    parameter FETCH   = 3'b000;
+    parameter DECODE  = 3'b001;
+    parameter EXECUTE = 3'b010;
+    parameter MEMORY  = 3'b011;
+    parameter WRITEBACK = 3'b100;
+    
+    // Estado atual
+    reg [2:0] current_state, next_state;
+    
+    // Registrador para armazenar o opcode
+    reg [4:0] opcode_reg;
+    
+    // Transição de estados
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            current_state <= FETCH;
+            opcode_reg <= 5'b00000;
+        end
+        else begin
+            current_state <= next_state;
+            if (current_state == DECODE) begin
+                opcode_reg <= opcode;
+            end
+        end
+    end
+    
+    // Lógica de próximo estado
+    always @(*) begin
+        case (current_state)
+            FETCH: begin
+                next_state = DECODE;
+            end
+            
+            DECODE: begin
+                next_state = EXECUTE;
+            end
+            
+            EXECUTE: begin
+                case (opcode)
+                    5'b01101, 5'b01110: begin // LW, SW
+                        next_state = MEMORY;
+                    end
+                    default: begin
+                        next_state = WRITEBACK;
+                    end
+                endcase
+            end
+            
+            MEMORY: begin
+                next_state = WRITEBACK;
+            end
+            
+            WRITEBACK: begin
+                next_state = FETCH;
+            end
+            
+            default: begin
+                next_state = FETCH;
+            end
+        endcase
+    end
+    
+    // Sinais de controle baseados no estado atual
+    always @(*) begin
+        // Valores padrão
+        pc_write = 1'b0;
+        pc_source = 1'b0;
+        mem_read = 1'b0;
+        mem_write = 1'b0;
+        reg_write = 1'b0;
+        alu_src_a = 1'b0;
+        alu_src_b = 1'b0;
+        reg_dst = 2'b00;
+        mem_to_reg = 2'b00;
+        alu_control = 5'b00000;
+        branch = 1'b0;
+        jump = 1'b0;
+        
+        case (current_state)
+            FETCH: begin
+                pc_write = 1'b1;
+                pc_source = 1'b0; // PC + 4
+            end
+            
+            DECODE: begin
+                // Preparação dos sinais baseados no opcode
+            end
+            
+            EXECUTE: begin
+                case (opcode_reg)
+                    // Instruções aritméticas/lógicas tipo R
+                    5'b00001, 5'b00010, 5'b00100, 5'b00101, 5'b00110, 
+                    5'b00111, 5'b01000, 5'b01010, 5'b01011, 5'b01100, 5'b10100: begin
+                        alu_src_a = 1'b0; // rs1
+                        alu_src_b = 1'b0; // rs2
+                        alu_control = opcode_reg;
+                        reg_dst = 2'b01; // rd
+                    end
+                    
+                    // Instruções imediatas tipo I
+                    5'b00011, 5'b01001: begin // ADDI, XORI
+                        alu_src_a = 1'b0; // rs1
+                        alu_src_b = 1'b1; // imediato
+                        alu_control = opcode_reg;
+                        reg_dst = 2'b00; // rt
+                    end
+                    
+                    // LW
+                    5'b01101: begin
+                        alu_src_a = 1'b0; // rs1
+                        alu_src_b = 1'b1; // imediato
+                        alu_control = 5'b00001; // Adição para calcular endereço
+                    end
+                    
+                    // SW
+                    5'b01110: begin
+                        alu_src_a = 1'b0; // rs1
+                        alu_src_b = 1'b1; // imediato
+                        alu_control = 5'b00001; // Adição para calcular endereço
+                    end
+                    
+                    // Branches
+                    5'b10000, 5'b10001: begin // BEQ, BNE
+                        alu_src_a = 1'b0; // rs1
+                        alu_src_b = 1'b0; // rs2
+                        alu_control = 5'b00010; // Subtração para comparação
+                        branch = 1'b1;
+                    end
+                    
+                    // JAL
+                    5'b10010: begin
+                        jump = 1'b1;
+                        reg_dst = 2'b10; // rd para JAL
+                        mem_to_reg = 2'b10; // PC+4
+                    end
+                    
+                    // JR
+                    5'b10011: begin
+                        pc_source = 1'b1; // rs1
+                        jump = 1'b1;
+                    end
+                endcase
+            end
+            
+            MEMORY: begin
+                case (opcode_reg)
+                    5'b01101: begin // LW
+                        mem_read = 1'b1;
+                    end
+                    
+                    5'b01110: begin // SW
+                        mem_write = 1'b1;
+                    end
+                endcase
+            end
+            
+            WRITEBACK: begin
+                case (opcode_reg)
+                    // Instruções que escrevem no registrador
+                    5'b00001, 5'b00010, 5'b00011, 5'b00100, 5'b00101, 
+                    5'b00110, 5'b00111, 5'b01000, 5'b01001, 5'b01010, 
+                    5'b01011, 5'b01100, 5'b10100: begin
+                        reg_write = 1'b1;
+                        mem_to_reg = 2'b00; // Resultado da ALU
+                    end
+                    
+                    5'b01101: begin // LW
+                        reg_write = 1'b1;
+                        mem_to_reg = 2'b01; // Dados da memória
+                    end
+                    
+                    5'b10010: begin // JAL
+                        reg_write = 1'b1;
+                        mem_to_reg = 2'b10; // PC+4
+                    end
+                endcase
+                
+                // Controle de branch
+                if (branch) begin
+                    case (opcode_reg)
+                        5'b10000: begin // BEQ
+                            if (zero_flag) begin
+                                pc_write = 1'b1;
+                                pc_source = 1'b1;
+                            end
+                        end
+                        
+                        5'b10001: begin // BNE
+                            if (!zero_flag) begin
+                                pc_write = 1'b1;
+                                pc_source = 1'b1;
+                            end
+                        end
+                    endcase
+                end
+                
+                // Controle de jump
+                if (jump) begin
+                    pc_write = 1'b1;
+                    pc_source = 1'b1;
+                end
+            end
+        endcase
+    end
+
+endmodule

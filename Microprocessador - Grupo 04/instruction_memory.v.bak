@@ -1,0 +1,49 @@
+// Memória de Instruções
+// Armazena as instruções do programa
+module instruction_memory(
+    input wire [31:0] address,     // Endereço da instrução
+    output reg [31:0] instruction  // Instrução lida
+);
+
+    // Memória de instruções com 1024 posições de 32 bits
+    reg [31:0] imem [0:1023];
+    
+    // Inicialização com programa de teste
+    initial begin
+        // Programa de teste simples
+        // ADDI r1, r0, 10    // r1 = 10
+        imem[0] = 32'b00011_000_001_000000000000001010;
+        
+        // ADDI r2, r0, 20    // r2 = 20  
+        imem[1] = 32'b00011_000_010_000000000000010100;
+        
+        // ADD r3, r1, r2     // r3 = r1 + r2 = 30
+        imem[2] = 32'b00001_010_001_011_000000000000000000;
+        
+        // SUB r4, r3, r1     // r4 = r3 - r1 = 20
+        imem[3] = 32'b00010_001_011_100_000000000000000000;
+        
+        // SW r3, 0(r0)       // MEM[0] = r3
+        imem[4] = 32'b01110_011_000_000000000000000000;
+        
+        // LW r5, 0(r0)       // r5 = MEM[0]
+        imem[5] = 32'b01101_000_101_000000000000000000;
+        
+        // BEQ r3, r5, 2      // if(r3 == r5) PC += 2
+        imem[6] = 32'b10000_101_011_000000000000000010;
+        
+        // JAL r7, 4          // r7 = PC+4, PC += 4
+        imem[7] = 32'b10010_000000000000000000000100;
+        
+        // Inicializar restante com NOPs (ADDI r0, r0, 0)
+        for (integer i = 8; i < 1024; i = i + 1) begin
+            imem[i] = 32'b00011_000_000_000000000000000000;
+        end
+    end
+    
+    // Leitura da memória
+    always @(*) begin
+        instruction = imem[address[11:2]]; // Divide por 4 (word addressing)
+    end
+
+endmodule

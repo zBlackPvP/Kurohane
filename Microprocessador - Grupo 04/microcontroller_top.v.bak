@@ -1,0 +1,66 @@
+// microcontroller_top.v
+module microcontroller_top (
+    input logic clk,
+    input logic rst
+    // Adicionar aqui I/O para DE2 se for usar (chaves, LEDs, etc.)
+    // output logic [7:0] led_out // Exemplo
+);
+
+    // Fios para conectar Datapath e Control Unit
+    logic pc_write_en_s;
+    logic pc_src_sel_s;
+    logic reg_write_en_s;
+    logic [1:0] mem_to_reg_sel_s;
+    logic mem_read_en_s;
+    logic mem_write_en_s;
+    logic alu_src_b_sel_s;
+    logic [3:0] alu_control_op_s;
+    logic reg_dst_sel_s;
+
+    logic [6:0] opcode_s;
+    logic [2:0] funct3_s; // Ou o que for usado para diferenciar R-type
+    logic [6:0] funct7_s; // Ou o que for usado para diferenciar R-type
+    logic [5:0] funct_mips_s; // Se usar formato MIPS com campo funct[5:0]
+    logic zero_flag_s;
+
+    // Instância do Datapath
+    datapath dp_unit (
+        .clk(clk),
+        .rst(rst),
+        .pc_write_en(pc_write_en_s),
+        .pc_src_sel(pc_src_sel_s),
+        .reg_write_en(reg_write_en_s),
+        .mem_to_reg_sel(mem_to_reg_sel_s),
+        .mem_read_en(mem_read_en_s),
+        .mem_write_en(mem_write_en_s),
+        .alu_src_b_sel(alu_src_b_sel_s),
+        .alu_control_op(alu_control_op_s),
+        .reg_dst_sel(reg_dst_sel_s),
+        .opcode(opcode_s),          // Para MIPS-like [31:26]
+        .funct3(funct3_s),        // Ajustar se não usar funct3
+        .funct7(funct_mips_s),    // Ajustar, usando como 'funct' do MIPS para Control Unit
+        .zero_flag_out(zero_flag_s)
+    );
+
+    // Instância da Control Unit
+    control_unit ctrl_unit (
+        .clk(clk), // Clock e Reset podem não ser necessários para controle combinacional,
+        .rst(rst), // mas são bons para futura FSM.
+        .opcode_in(opcode_s),
+        .funct_in(funct_mips_s), // Passando o campo funct [5:0] da instrução
+        .zero_flag_in(zero_flag_s),
+        .pc_write_en_out(pc_write_en_s),
+        .pc_src_sel_out(pc_src_sel_s),
+        .reg_write_en_out(reg_write_en_s),
+        .mem_to_reg_sel_out(mem_to_reg_sel_s),
+        .mem_read_en_out(mem_read_en_s),
+        .mem_write_en_out(mem_write_en_s),
+        .alu_src_b_sel_out(alu_src_b_sel_s),
+        .alu_control_op_out(alu_control_op_s),
+        .reg_dst_sel_out(reg_dst_sel_s)
+    );
+
+    // Exemplo de saída para LED (se você tiver uma memória de dados visível ou regs)
+    // assign led_out = dp_unit.reg_bank_unit.registers[1][7:0]; // Ex: conteúdo de R1 nos LEDs
+
+endmodule

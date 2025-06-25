@@ -1,0 +1,108 @@
+// Datapath - Caminho de Dados
+// Conecta todos os componentes do processador
+module datapath(
+    input wire clk,
+    input wire reset,
+    // Sinais de controle vindos da unidade de controle
+    input wire pc_write,
+    input wire pc_source,
+    input wire mem_read,
+    input wire mem_write,
+    input wire reg_write,
+    input wire alu_src_a,
+    input wire alu_src_b,
+    input wire [1:0] reg_dst,
+    input wire [1:0] mem_to_reg,
+    input wire [4:0] alu_control,
+    // Saídas para a unidade de controle
+    output wire [4:0] opcode,
+    output wire zero_flag,
+    // Saídas para debug/visualização
+    output wire [31:0] pc_out,
+    output wire [31:0] instruction_out,
+    output wire [31:0] alu_result_out,
+    output wire [31:0] reg_data1_out,
+    output wire [31:0] reg_data2_out
+);
+
+    // Sinais internos
+    wire [31:0] pc;
+    wire [31:0] instruction;
+    wire [31:0] read_data1, read_data2;
+    wire [31:0] alu_result;
+    wire [31:0] mem_data;
+    wire [31:0] write_data;
+    wire [31:0] alu_operand_a, alu_operand_b;
+    wire [31:0] branch_target;
+    wire [2:0] write_reg_addr;
+    wire [31:0] sign_extend_imm;
+    wire [31:0] pc_plus_4;
+    
+    // Extração dos campos da instrução
+    wire [4:0] op = instruction[31:27];
+    wire [2:0] rs1 = instruction[23:21];
+    wire [2:0] rs2 = instruction[26:24];  
+    wire [2:0] rd = instruction[20:18];
+    wire [20:0] immediate = instruction[20:0];
+    
+    // Extensão de sinal do imediato
+    assign sign_extend_imm = {{11{immediate[20]}}, immediate};
+    
+    // PC + 4
+    assign pc_plus_4 = pc + 32'h00000004;
+    
+    // Cálculo do endereço de branch/jump
+    assign branch_target = pc + (sign_extend_imm << 2);
+    
+    // Seleção do registrador de destino
+    assign write_reg_addr = (reg_dst == 2'b00) ? rs1 :          // rt para tipo I
+                           (reg_dst == 2'b01) ? rd :            // rd para tipo R
+                           (reg_dst == 2'b10) ? 3'b111 : 3'b000; // ra para JAL
+    
+    // Seleção da fonte A da ALU
+    assign alu_operand_a = alu_src_a ? pc : read_data1;
+    
+    // Seleção da fonte B da ALU
+    assign alu_operand_b = alu_src_b ? sign_extend_imm : read_data2;
+    
+    // Seleção dos dados para escrita no registrador
+    assign write_data = (mem_to_reg == 2'b00) ? alu_result :    // Resultado da ALU
+                       (mem_to_reg == 2'b01) ? mem_data :       // Dados da memória
+                       (mem_to_reg == 2'b10) ? pc_plus_4 :     // PC+4 para JAL
+                       32'h00000000;
+    
+    // Instanciação do PC Counter
+    pc_counter pc_inst(
+        .clk(clk),
+        .reset(reset),
+        .pc_write(pc_write),
+        .pc_source(pc_source),
+        .branch_target(branch_target),
+        .pc(pc)
+    );
+    
+    // Instanciação da Memória de Instruções
+    instruction_memory imem_inst(
+        .address(pc),
+        .instruction(instruction)
+    );
+    
+    // Instanciação do Banco de Registradores
+    register_bank reg_bank_inst(
+        .clk(clk),
+        .reset(reset),
+        .reg_write(reg_write),
+        .read_reg1(rs1),
+        .read_reg2(rs2),
+        .write_reg(write_reg_addr),
+        .write_data(write_data),
+        .read_data1(read_data1),
+        .read_data2(read_data2)
+    );
+    
+    // Instanciação da ALU
+    alu alu_inst(
+        .operand_a(alu_operand_a),
+        .operand_b(alu_operand_b),
+        .alu_control(alu_control),
+        .result
